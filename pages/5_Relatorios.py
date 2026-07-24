@@ -5,8 +5,11 @@ import plotly.express as px
 import streamlit as st
 
 from services.relatorio_service import RelatorioService
+from utils.auth import exigir_login
 
 st.set_page_config(page_title="Relatórios", page_icon="📊", layout="centered")
+exigir_login()
+
 st.title("📊 Relatórios")
 st.caption("Análise histórica das vendas e da operação.")
 

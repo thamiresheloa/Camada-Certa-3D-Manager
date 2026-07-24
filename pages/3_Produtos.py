@@ -2,8 +2,11 @@ import streamlit as st
 
 from services.filamento_service import FilamentoService
 from services.produto_service import ProdutoData, ProdutoService
+from utils.auth import exigir_login
 
 st.set_page_config(page_title="Produtos", page_icon="📦")
+exigir_login()
+
 st.title("📦 Produtos")
 st.caption("Ficha técnica e precificação automática dos produtos.")
 

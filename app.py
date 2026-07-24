@@ -1,8 +1,10 @@
 import streamlit as st
 
 from services.dashboard_service import DashboardService
+from utils.auth import exigir_login
 
 st.set_page_config(page_title="Camada Certa Manager", page_icon="🧩", layout="centered")
+exigir_login()
 
 st.title("🧩 Camada Certa Manager")
 st.caption("Visão geral da operação da Camada Certa 3D.")

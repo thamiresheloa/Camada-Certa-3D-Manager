@@ -1,3 +1,4 @@
+import models  # noqa: F401  (garante que todos os models sejam registrados no SQLAlchemy antes de qualquer query)
 from database.connection import SessionLocal
 
 
