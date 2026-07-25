@@ -6,10 +6,10 @@ from repositories.filamento_repository import FilamentoRepository
 
 @dataclass
 class FilamentoData:
-    nome: str
-    marca: str
-    cor: str
     tipo: str
+    especificacao: str
+    cor: str
+    marca: str
     valor_kg: float
     peso_original: float
     peso_restante: float
@@ -23,7 +23,7 @@ class FilamentoService:
         self.repository = repository or FilamentoRepository()
 
     def listar(self):
-        return sorted(self.repository.get_all(), key=lambda f: (f.nome or "").lower())
+        return sorted(self.repository.get_all(), key=lambda f: f.descricao.lower())
 
     def obter(self, id_):
         return self.repository.get_by_id(id_)
@@ -41,10 +41,10 @@ class FilamentoService:
 
     def _campos(self, dados: FilamentoData):
         return {
-            "nome": dados.nome.strip(),
-            "marca": dados.marca.strip(),
-            "cor": dados.cor.strip(),
             "tipo": dados.tipo.strip(),
+            "especificacao": dados.especificacao.strip(),
+            "cor": dados.cor.strip(),
+            "marca": dados.marca.strip(),
             "valor_kg": dados.valor_kg,
             "peso_original": dados.peso_original,
             "peso_restante": dados.peso_restante,
@@ -54,8 +54,10 @@ class FilamentoService:
         }
 
     def _validar(self, dados: FilamentoData):
-        if not dados.nome or not dados.nome.strip():
-            raise ValueError("Nome do filamento é obrigatório.")
+        if not dados.cor or not dados.cor.strip():
+            raise ValueError("Cor do filamento é obrigatória.")
+        if not dados.marca or not dados.marca.strip():
+            raise ValueError("Marca do filamento é obrigatória.")
         if dados.valor_kg <= 0:
             raise ValueError("Valor por kg deve ser maior que zero.")
         if dados.peso_original <= 0:

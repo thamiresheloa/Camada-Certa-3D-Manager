@@ -15,7 +15,7 @@ filamento_service = FilamentoService()
 
 produtos = produto_service.listar()
 filamentos = filamento_service.listar()
-opcoes_filamento = {f.id: f"{f.nome} — {f.marca} — {f.cor}" for f in filamentos}
+opcoes_filamento = {f.id: f.descricao for f in filamentos}
 
 st.subheader("Produtos cadastrados")
 if not produtos:
@@ -25,7 +25,7 @@ else:
         [
             {
                 "Nome": p.nome,
-                "Filamento": p.filamento.nome if p.filamento else "-",
+                "Filamento": p.filamento.descricao if p.filamento else "-",
                 "Peso (g)": p.peso,
                 "Tempo (h)": p.tempo,
                 "Custo total": p.custo_total,

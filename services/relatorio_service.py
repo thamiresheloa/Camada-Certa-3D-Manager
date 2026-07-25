@@ -45,9 +45,8 @@ class RelatorioService:
                 ranking_produtos[v.produto.nome] = ranking_produtos.get(v.produto.nome, 0) + (v.quantidade or 0)
                 if v.produto.filamento:
                     consumo = (v.produto.peso or 0) * (v.quantidade or 0)
-                    ranking_filamento[v.produto.filamento.nome] = (
-                        ranking_filamento.get(v.produto.filamento.nome, 0) + consumo
-                    )
+                    descricao_filamento = v.produto.filamento.descricao
+                    ranking_filamento[descricao_filamento] = ranking_filamento.get(descricao_filamento, 0) + consumo
             if v.data_venda:
                 receita_por_dia[v.data_venda] = receita_por_dia.get(v.data_venda, 0) + (v.valor_venda or 0)
 
