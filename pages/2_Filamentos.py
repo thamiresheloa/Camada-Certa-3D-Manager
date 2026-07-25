@@ -52,8 +52,8 @@ with st.form("form_novo_filamento", clear_on_submit=True):
         fornecedor = st.text_input("Fornecedor")
     with col2:
         valor_kg = st.number_input("Valor por kg (R$)", min_value=0.0, step=0.5)
-        peso_original = st.number_input("Peso original (g)", min_value=0.0, step=50.0)
-        peso_restante = st.number_input("Peso restante (g)", min_value=0.0, step=50.0)
+        peso_original = st.number_input("Peso original (g)", min_value=0.0, step=50.0, value=1000.0)
+        peso_restante = st.number_input("Peso restante (g)", min_value=0.0, step=50.0, value=1000.0)
         data_compra = st.date_input("Data da compra", value=None)
         validade = st.date_input("Validade", value=None)
 
