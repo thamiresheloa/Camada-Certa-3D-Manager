@@ -18,6 +18,7 @@ produto_service = ProdutoService()
 vendas = venda_service.listar()
 produtos = produto_service.listar()
 opcoes_produto = {p.id: f"{p.nome} — R$ {p.preco_sugerido or 0:.2f}" for p in produtos}
+produtos_por_id = {p.id: p for p in produtos}
 
 st.subheader("Vendas registradas")
 if not vendas:
@@ -49,6 +50,8 @@ else:
     produto_id = st.selectbox(
         "Produto", options=list(opcoes_produto.keys()), format_func=lambda id_: opcoes_produto[id_]
     )
+    if produtos_por_id[produto_id].foto:
+        st.image(produtos_por_id[produto_id].foto, width=150)
     quantidade = st.number_input("Quantidade", min_value=1, step=1, value=1)
     sugestao = venda_service.sugerir_valor_total(produto_id, quantidade)
 
@@ -93,6 +96,9 @@ if vendas:
         format_func=lambda id_: opcoes_venda[id_],
     )
     venda_atual = venda_service.obter(selecionado_id)
+
+    if venda_atual.produto and venda_atual.produto.foto:
+        st.image(venda_atual.produto.foto, width=150)
 
     with st.form("form_editar_venda"):
         produto_ids = list(opcoes_produto.keys())

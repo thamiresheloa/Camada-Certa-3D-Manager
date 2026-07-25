@@ -14,7 +14,7 @@ class ProdutoData:
     tempo: float
     lucro_padrao: float = 40.0
     observacao: str | None = None
-    foto: str | None = None
+    foto: bytes | None = None
 
 
 class ProdutoService:
@@ -78,7 +78,7 @@ class ProdutoService:
             "tempo": dados.tempo,
             "lucro_padrao": dados.lucro_padrao,
             "observacao": dados.observacao.strip() if dados.observacao else None,
-            "foto": dados.foto.strip() if dados.foto else None,
+            "foto": dados.foto,
             "custo_filamento": resultado.custo_filamento,
             "custo_energia": resultado.custo_energia,
             "custo_desgaste": resultado.custo_desgaste,

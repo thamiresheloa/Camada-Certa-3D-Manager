@@ -55,7 +55,7 @@ else:
         peso = st.number_input("Peso (g)", min_value=0.0, step=1.0)
         tempo = st.number_input("Tempo de impressão (h)", min_value=0.0, step=0.5)
         lucro_padrao = st.number_input("Lucro padrão (%)", min_value=0.0, step=1.0, value=40.0)
-        foto = st.text_input("Foto (caminho ou URL)")
+        foto_arquivo = st.file_uploader("Foto do produto", type=["png", "jpg", "jpeg", "webp"])
         observacao = st.text_area("Observações")
 
         calcular = st.form_submit_button("Calcular")
@@ -71,7 +71,7 @@ else:
                 tempo=tempo,
                 lucro_padrao=lucro_padrao,
                 observacao=observacao,
-                foto=foto,
+                foto=foto_arquivo.getvalue() if foto_arquivo else None,
             )
         except ValueError as erro:
             st.session_state.pop("novo_produto_resultado", None)
@@ -81,6 +81,8 @@ else:
     resultado = st.session_state.get("novo_produto_resultado")
     dados_pendentes = st.session_state.get("novo_produto_dados")
     if resultado and dados_pendentes:
+        if dados_pendentes.foto:
+            st.image(dados_pendentes.foto, width=200)
         st.markdown("**Resultado do cálculo**")
         col1, col2, col3 = st.columns(3)
         col1.metric("Custo filamento", f"R$ {resultado.custo_filamento:.2f}")
@@ -109,6 +111,9 @@ if produtos:
     )
     produto_atual = produto_service.obter(selecionado_id)
 
+    if produto_atual.foto:
+        st.image(produto_atual.foto, width=200)
+
     with st.form("form_editar_produto"):
         e_nome = st.text_input("Nome do produto", value=produto_atual.nome or "")
         filamento_ids = list(opcoes_filamento.keys())
@@ -130,7 +135,7 @@ if produtos:
         e_lucro_padrao = st.number_input(
             "Lucro padrão (%)", min_value=0.0, step=1.0, value=float(produto_atual.lucro_padrao or 40)
         )
-        e_foto = st.text_input("Foto (caminho ou URL)", value=produto_atual.foto or "")
+        e_foto_arquivo = st.file_uploader("Substituir foto (opcional)", type=["png", "jpg", "jpeg", "webp"])
         e_observacao = st.text_area("Observações", value=produto_atual.observacao or "")
 
         col_salvar, col_excluir = st.columns(2)
@@ -147,7 +152,7 @@ if produtos:
                 tempo=e_tempo,
                 lucro_padrao=e_lucro_padrao,
                 observacao=e_observacao,
-                foto=e_foto,
+                foto=e_foto_arquivo.getvalue() if e_foto_arquivo else produto_atual.foto,
             )
             produto_service.atualizar(selecionado_id, dados, resultado)
             st.success("Produto atualizado com sucesso!")
