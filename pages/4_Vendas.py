@@ -43,7 +43,7 @@ else:
                 "Valor": v.valor_venda,
                 "Forma de pagamento": v.forma_pagamento,
                 "Pago": formatar_pago(v.pago),
-                "Data": v.data_venda,
+                "Data": v.data_venda.strftime("%d/%m/%Y") if v.data_venda else "-",
             }
             for v in vendas
         ],
@@ -112,7 +112,7 @@ else:
             canal = st.text_input("Canal")
             forma_pagamento = st.text_input("Forma de pagamento")
             pago = st.selectbox("Pago", options=["Sim", "Não"])
-            data_venda = st.date_input("Data da venda", value=date.today())
+            data_venda = st.date_input("Data da venda", value=date.today(), format="DD/MM/YYYY")
 
             registrar = st.form_submit_button("Registrar venda")
 
@@ -138,7 +138,10 @@ if vendas:
     st.subheader("Editar / excluir venda")
 
     opcoes_venda = {
-        v.id: f"#{v.id} — {v.cliente or 'sem cliente'} — {v.data_venda or ''} — R$ {v.valor_venda or 0:.2f}"
+        v.id: (
+            f"#{v.id} — {v.cliente or 'sem cliente'} — "
+            f"{v.data_venda.strftime('%d/%m/%Y') if v.data_venda else ''} — R$ {v.valor_venda or 0:.2f}"
+        )
         for v in vendas
     }
     selecionado_id = st.selectbox(
@@ -211,7 +214,7 @@ if vendas:
         e_canal = st.text_input("Canal", value=venda_atual.canal or "")
         e_forma_pagamento = st.text_input("Forma de pagamento", value=venda_atual.forma_pagamento or "")
         e_pago = st.selectbox("Pago", options=["Sim", "Não"], index=0 if venda_atual.pago else 1)
-        e_data_venda = st.date_input("Data da venda", value=venda_atual.data_venda)
+        e_data_venda = st.date_input("Data da venda", value=venda_atual.data_venda, format="DD/MM/YYYY")
 
         col_salvar, col_excluir = st.columns(2)
         salvar = col_salvar.form_submit_button("Salvar alterações")

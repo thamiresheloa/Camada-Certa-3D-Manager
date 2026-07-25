@@ -51,64 +51,82 @@ def editor_foto(arquivo, chave):
 
 
 st.subheader("Produtos cadastrados")
+
+busca = st.text_input("🔍 Buscar produto", placeholder="Digite o nome do produto...")
+produtos_filtrados = (
+    [p for p in produtos if busca.strip().lower() in (p.nome or "").lower()] if busca else produtos
+)
+
 if not produtos:
     st.info("Nenhum produto cadastrado ainda.")
+elif not produtos_filtrados:
+    st.info("Nenhum produto encontrado para essa busca.")
 else:
-    st.dataframe(
-        [
-            {
-                "Nome": p.nome,
-                "Filamento": p.filamento.descricao if p.filamento else "-",
-                "Peso (g)": p.peso,
-                "Tempo (h)": p.tempo,
-                "Custo total": p.custo_total,
-                "Lucro padrão (%)": p.lucro_padrao,
-                "Preço sugerido": p.preco_sugerido,
-                "Lucro": p.lucro,
-            }
-            for p in produtos
-        ],
-        use_container_width=True,
-        hide_index=True,
-    )
+    for inicio in range(0, len(produtos_filtrados), 4):
+        colunas = st.columns(4)
+        for coluna, produto in zip(colunas, produtos_filtrados[inicio : inicio + 4]):
+            with coluna:
+                with st.container(border=True):
+                    if produto.foto:
+                        st.image(produto.foto, width=120)
+                    else:
+                        st.markdown("🖼️ *(sem foto)*")
+                    st.markdown(f"**{produto.nome}**")
+                    cor = produto.filamento.cor if produto.filamento else "-"
+                    st.caption(f"Cor: {cor}")
+                    preco_texto = f"R\\$ {produto.preco_sugerido:.2f}" if produto.preco_sugerido is not None else "-"
+                    st.write(preco_texto)
+                    if st.button("🗑️ Excluir", key=f"excluir_card_{produto.id}", use_container_width=True):
+                        with st.spinner("Excluindo..."):
+                            produto_service.excluir(produto.id)
+                        st.toast("Produto excluído.", icon="🗑️")
+                        st.rerun()
 
 st.divider()
 st.subheader("Novo produto")
+
+if "upload_nonce" not in st.session_state:
+    st.session_state["upload_nonce"] = 0
 
 if not filamentos:
     st.warning("Cadastre um filamento antes de criar um produto.")
 else:
     st.markdown("**Foto do produto (opcional)**")
     foto_arquivo_novo = st.file_uploader(
-        "Selecione uma imagem", type=["png", "jpg", "jpeg", "webp"], key="upload_novo"
+        "Selecione uma imagem",
+        type=["png", "jpg", "jpeg", "webp"],
+        key=f"upload_novo_{st.session_state['upload_nonce']}",
     )
     foto_bytes_novo = editor_foto(foto_arquivo_novo, "novo")
 
-    with st.form("form_novo_produto"):
-        nome = st.text_input("Nome do produto")
+    with st.form("form_novo_produto", clear_on_submit=True):
+        nome = st.text_input("Nome do produto", key="novo_nome")
         filamento_id = st.selectbox(
             "Filamento",
             options=list(opcoes_filamento.keys()),
             format_func=lambda id_: opcoes_filamento[id_],
+            key="novo_filamento",
         )
-        peso = st.number_input("Peso (g)", min_value=0.0, step=1.0)
-        tempo = st.number_input("Tempo de impressão (h)", min_value=0.0, step=0.5)
+        peso = st.number_input("Peso (g)", min_value=0.0, step=1.0, value=None, key="novo_peso")
+        tempo = st.number_input(
+            "Tempo de impressão (h)", min_value=0.0, step=0.5, value=None, key="novo_tempo"
+        )
         lucro_padrao = st.number_input(
-            "Lucro padrão (%)", min_value=0.0, max_value=99.0, step=1.0, value=40.0
+            "Lucro padrão (%)", min_value=0.0, max_value=99.0, step=1.0, value=40.0, key="novo_lucro"
         )
-        observacao = st.text_area("Observações")
+        observacao = st.text_area("Observações", key="novo_obs")
 
         calcular = st.form_submit_button("Calcular")
 
     if calcular:
         try:
-            resultado = produto_service.calcular_preco(filamento_id, peso, tempo, lucro_padrao)
+            resultado = produto_service.calcular_preco(filamento_id, peso or 0.0, tempo or 0.0, lucro_padrao)
             st.session_state["novo_produto_resultado"] = resultado
             st.session_state["novo_produto_dados"] = ProdutoData(
                 nome=nome,
                 filamento_id=filamento_id,
-                peso=peso,
-                tempo=tempo,
+                peso=peso or 0.0,
+                tempo=tempo or 0.0,
                 lucro_padrao=lucro_padrao,
                 observacao=observacao,
                 foto=foto_bytes_novo,
@@ -131,12 +149,17 @@ else:
         col3.metric("Lucro", f"R$ {resultado.lucro:.2f}", f"{resultado.margem:.1f}% margem")
 
         if st.button("Salvar produto"):
-            produto_service.criar(dados_pendentes, resultado)
-            st.session_state.pop("novo_produto_resultado", None)
-            st.session_state.pop("novo_produto_dados", None)
-            st.session_state.pop("rotacao_novo", None)
-            st.success("Produto salvo com sucesso!")
-            st.rerun()
+            try:
+                with st.spinner("Salvando..."):
+                    produto_service.criar(dados_pendentes, resultado)
+                st.session_state.pop("novo_produto_resultado", None)
+                st.session_state.pop("novo_produto_dados", None)
+                st.session_state.pop("rotacao_novo", None)
+                st.session_state["upload_nonce"] += 1
+                st.toast("Produto salvo com sucesso!", icon="✅")
+                st.rerun()
+            except ValueError as erro:
+                st.error(str(erro))
 
 if produtos:
     st.divider()
@@ -202,13 +225,15 @@ if produtos:
                 observacao=e_observacao,
                 foto=foto_bytes_edicao if foto_bytes_edicao else produto_atual.foto,
             )
-            produto_service.atualizar(selecionado_id, dados, resultado)
-            st.success("Produto atualizado com sucesso!")
+            with st.spinner("Salvando..."):
+                produto_service.atualizar(selecionado_id, dados, resultado)
+            st.toast("Produto atualizado com sucesso!", icon="✅")
             st.rerun()
         except ValueError as erro:
             st.error(str(erro))
 
     if excluir:
-        produto_service.excluir(selecionado_id)
-        st.success("Produto excluído.")
+        with st.spinner("Excluindo..."):
+            produto_service.excluir(selecionado_id)
+        st.toast("Produto excluído.", icon="🗑️")
         st.rerun()
