@@ -33,12 +33,6 @@ with st.form("form_configuracoes"):
         value=float(config_atual.percentual_desgaste) if config_atual else 0.0,
         step=0.5,
     )
-    lucro_padrao = st.number_input(
-        "Lucro padrão (%)",
-        min_value=0.0,
-        value=float(config_atual.lucro_padrao) if config_atual else 0.0,
-        step=1.0,
-    )
 
     salvar = st.form_submit_button("Salvar")
 
@@ -48,7 +42,6 @@ if salvar:
             energia_kwh=energia_kwh,
             potencia_impressora=potencia_impressora,
             percentual_desgaste=percentual_desgaste,
-            lucro_padrao=lucro_padrao,
         )
         service.salvar(dados)
         st.success("Configurações salvas com sucesso!")

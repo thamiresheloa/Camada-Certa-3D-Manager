@@ -8,7 +8,6 @@ class ConfiguracaoData:
     energia_kwh: float
     potencia_impressora: float
     percentual_desgaste: float
-    lucro_padrao: float
 
 
 class ConfiguracaoService:
@@ -25,7 +24,6 @@ class ConfiguracaoService:
             "energia_kwh": dados.energia_kwh,
             "potencia_impressora": dados.potencia_impressora,
             "percentual_desgaste": dados.percentual_desgaste,
-            "lucro_padrao": dados.lucro_padrao,
         }
         atual = self.obter()
         if atual is None:
@@ -39,5 +37,3 @@ class ConfiguracaoService:
             raise ValueError("Potência da impressora deve ser maior que zero.")
         if not (0 <= dados.percentual_desgaste <= 100):
             raise ValueError("Percentual de desgaste deve estar entre 0 e 100.")
-        if dados.lucro_padrao < 0:
-            raise ValueError("Lucro padrão não pode ser negativo.")

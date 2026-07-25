@@ -12,6 +12,7 @@ class ProdutoData:
     filamento_id: int
     peso: float
     tempo: float
+    lucro_padrao: float = 40.0
     observacao: str | None = None
     foto: str | None = None
 
@@ -35,7 +36,7 @@ class ProdutoService:
     def obter(self, id_):
         return self.repository.get_by_id(id_)
 
-    def calcular_preco(self, filamento_id: int, peso: float, tempo: float) -> ResultadoPrecificacao:
+    def calcular_preco(self, filamento_id: int, peso: float, tempo: float, lucro_padrao: float) -> ResultadoPrecificacao:
         filamento = self.filamento_repository.get_by_id(filamento_id)
         if filamento is None:
             raise ValueError("Filamento não encontrado.")
@@ -49,7 +50,7 @@ class ProdutoService:
             potencia_impressora=configuracao.potencia_impressora,
             energia_kwh=configuracao.energia_kwh,
             percentual_desgaste=configuracao.percentual_desgaste,
-            lucro_padrao=configuracao.lucro_padrao,
+            lucro_padrao=lucro_padrao,
         )
 
     def criar(self, dados: ProdutoData, resultado: ResultadoPrecificacao):
@@ -66,7 +67,7 @@ class ProdutoService:
     def _obter_configuracao(self):
         configuracoes = self.configuracao_repository.get_all()
         if not configuracoes:
-            raise ValueError("Cadastre as Configurações (tarifa, potência, desgaste, lucro) antes de precificar um produto.")
+            raise ValueError("Cadastre as Configurações (tarifa, potência, desgaste) antes de precificar um produto.")
         return configuracoes[0]
 
     def _campos(self, dados: ProdutoData, resultado: ResultadoPrecificacao):
@@ -75,6 +76,7 @@ class ProdutoService:
             "filamento_id": dados.filamento_id,
             "peso": dados.peso,
             "tempo": dados.tempo,
+            "lucro_padrao": dados.lucro_padrao,
             "observacao": dados.observacao.strip() if dados.observacao else None,
             "foto": dados.foto.strip() if dados.foto else None,
             "custo_filamento": resultado.custo_filamento,
@@ -94,3 +96,5 @@ class ProdutoService:
             raise ValueError("Peso deve ser maior que zero.")
         if dados.tempo <= 0:
             raise ValueError("Tempo de impressão deve ser maior que zero.")
+        if dados.lucro_padrao < 0:
+            raise ValueError("Lucro padrão não pode ser negativo.")

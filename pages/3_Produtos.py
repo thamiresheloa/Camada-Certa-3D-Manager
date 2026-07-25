@@ -29,6 +29,7 @@ else:
                 "Peso (g)": p.peso,
                 "Tempo (h)": p.tempo,
                 "Custo total": p.custo_total,
+                "Lucro padrão (%)": p.lucro_padrao,
                 "Preço sugerido": p.preco_sugerido,
                 "Lucro": p.lucro,
             }
@@ -53,6 +54,7 @@ else:
         )
         peso = st.number_input("Peso (g)", min_value=0.0, step=1.0)
         tempo = st.number_input("Tempo de impressão (h)", min_value=0.0, step=0.5)
+        lucro_padrao = st.number_input("Lucro padrão (%)", min_value=0.0, step=1.0, value=40.0)
         foto = st.text_input("Foto (caminho ou URL)")
         observacao = st.text_area("Observações")
 
@@ -60,13 +62,14 @@ else:
 
     if calcular:
         try:
-            resultado = produto_service.calcular_preco(filamento_id, peso, tempo)
+            resultado = produto_service.calcular_preco(filamento_id, peso, tempo, lucro_padrao)
             st.session_state["novo_produto_resultado"] = resultado
             st.session_state["novo_produto_dados"] = ProdutoData(
                 nome=nome,
                 filamento_id=filamento_id,
                 peso=peso,
                 tempo=tempo,
+                lucro_padrao=lucro_padrao,
                 observacao=observacao,
                 foto=foto,
             )
@@ -124,6 +127,9 @@ if produtos:
         e_tempo = st.number_input(
             "Tempo de impressão (h)", min_value=0.0, step=0.5, value=float(produto_atual.tempo or 0)
         )
+        e_lucro_padrao = st.number_input(
+            "Lucro padrão (%)", min_value=0.0, step=1.0, value=float(produto_atual.lucro_padrao or 40)
+        )
         e_foto = st.text_input("Foto (caminho ou URL)", value=produto_atual.foto or "")
         e_observacao = st.text_area("Observações", value=produto_atual.observacao or "")
 
@@ -133,12 +139,13 @@ if produtos:
 
     if recalcular_salvar:
         try:
-            resultado = produto_service.calcular_preco(e_filamento_id, e_peso, e_tempo)
+            resultado = produto_service.calcular_preco(e_filamento_id, e_peso, e_tempo, e_lucro_padrao)
             dados = ProdutoData(
                 nome=e_nome,
                 filamento_id=e_filamento_id,
                 peso=e_peso,
                 tempo=e_tempo,
+                lucro_padrao=e_lucro_padrao,
                 observacao=e_observacao,
                 foto=e_foto,
             )

@@ -13,5 +13,4 @@ class Configuracao(Base):
     energia_kwh: Mapped[float | None] = mapped_column(Float, nullable=True)
     potencia_impressora: Mapped[float | None] = mapped_column(Float, nullable=True)
     percentual_desgaste: Mapped[float | None] = mapped_column(Float, nullable=True)
-    lucro_padrao: Mapped[float | None] = mapped_column(Float, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())

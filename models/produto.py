@@ -18,6 +18,7 @@ class Produto(Base):
     filamento_id: Mapped[int | None] = mapped_column(SmallInteger, ForeignKey("Filamentos.id"), nullable=True)
     peso: Mapped[float | None] = mapped_column(Float, nullable=True)
     tempo: Mapped[float | None] = mapped_column(Float, nullable=True)
+    lucro_padrao: Mapped[float | None] = mapped_column(Float, nullable=True)
     custo_filamento: Mapped[float | None] = mapped_column(Float, nullable=True)
     custo_energia: Mapped[float | None] = mapped_column(Float, nullable=True)
     custo_desgaste: Mapped[float | None] = mapped_column(Float, nullable=True)
