@@ -6,7 +6,6 @@ from services.produto_service import ProdutoService
 from services.venda_service import ItemVendaData, VendaData, VendaService
 from utils.auth import exigir_login
 
-st.set_page_config(page_title="Vendas", page_icon="🛒")
 exigir_login()
 
 st.title("🛒 Vendas")

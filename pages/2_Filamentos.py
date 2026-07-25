@@ -6,7 +6,6 @@ from utils.auth import exigir_login
 TIPOS_FILAMENTO = ["PLA", "PETG","ABS"]
 ESPECIFICACOES_FILAMENTO = ["Comum", "High Speed","Silk","Premium"]
 
-st.set_page_config(page_title="Filamentos", page_icon="🧵")
 exigir_login()
 
 st.title("🧵 Filamentos")

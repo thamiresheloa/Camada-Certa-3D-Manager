@@ -3,7 +3,6 @@ import streamlit as st
 from services.configuracao_service import ConfiguracaoData, ConfiguracaoService
 from utils.auth import exigir_login
 
-st.set_page_config(page_title="Configurações", page_icon="⚙️")
 exigir_login()
 
 st.title("⚙️ Configurações")

@@ -1,56 +1,18 @@
 import streamlit as st
 
-from services.dashboard_service import DashboardService
-from utils.auth import exigir_login
-
 st.set_page_config(page_title="Camada Certa Manager", page_icon="🧩", layout="centered")
-exigir_login()
 
-st.title("🧩 Camada Certa Manager")
-st.caption("Visão geral da operação da Camada Certa 3D.")
+pagina_inicial = st.Page("pages/0_Pagina_Inicial.py", title="Página Inicial", icon="🧩", default=True)
+configuracoes = st.Page("pages/1_Configuracoes.py", title="Configurações", icon="⚙️")
+filamentos = st.Page("pages/2_Filamentos.py", title="Filamentos", icon="🧵")
+produtos = st.Page("pages/3_Produtos.py", title="Produtos", icon="📦")
+vendas = st.Page("pages/4_Vendas.py", title="Vendas", icon="🛒")
+relatorios = st.Page("pages/5_Relatorios.py", title="Relatórios", icon="📊")
 
-dashboard_service = DashboardService()
-resumo = dashboard_service.resumo()
-
-col1, col2, col3 = st.columns(3)
-col1.metric("Receita do mês", f"R$ {resumo.receita_mes:.2f}")
-col2.metric("Lucro do mês", f"R$ {resumo.lucro_mes:.2f}")
-col3.metric("Pedidos realizados", resumo.pedidos_mes)
-
-col4, col5, col6 = st.columns(3)
-col4.metric("Produtos vendidos", resumo.produtos_vendidos_mes)
-col5.metric("Horas de impressão", f"{resumo.horas_impressao_mes:.1f} h")
-col6.metric("Filamento consumido", f"{resumo.filamento_consumido_mes:.0f} g")
-
-st.divider()
-st.subheader("Últimas vendas")
-if not resumo.ultimas_vendas:
-    st.info("Nenhuma venda registrada ainda.")
+if st.session_state.get("autenticado"):
+    paginas = [pagina_inicial, configuracoes, filamentos, produtos, vendas, relatorios]
 else:
-    st.dataframe(
-        [
-            {
-                "Produtos": ", ".join(
-                    f"{item.produto.nome if item.produto else '-'} ({item.quantidade}x)" for item in v.itens
-                ),
-                "Valor": v.valor_venda,
-                "Data": v.data_venda,
-            }
-            for v in resumo.ultimas_vendas
-        ],
-        use_container_width=True,
-        hide_index=True,
-    )
+    paginas = [pagina_inicial]
 
-st.subheader("Produtos mais vendidos")
-if not resumo.produtos_mais_vendidos:
-    st.info("Nenhum dado de vendas ainda.")
-else:
-    st.dataframe(
-        [{"Produto": nome, "Unidades vendidas": qtd} for nome, qtd in resumo.produtos_mais_vendidos],
-        use_container_width=True,
-        hide_index=True,
-    )
-
-st.divider()
-st.caption("Use o menu lateral para acessar as demais telas do sistema.")
+pg = st.navigation(paginas)
+pg.run()
