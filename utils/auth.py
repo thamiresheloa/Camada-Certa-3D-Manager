@@ -5,13 +5,19 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
+CAMINHO_LOGO = "assets/logo.jpeg"
+
 
 def exigir_login():
     if st.session_state.get("autenticado"):
+        st.sidebar.image(CAMINHO_LOGO, use_container_width=True)
         st.sidebar.button("Sair", on_click=_sair)
         return
 
-    st.title("🔒 Camada Certa Manager")
+    col_esq, col_meio, col_dir = st.columns([1, 2, 1])
+    with col_meio:
+        st.image(CAMINHO_LOGO, use_container_width=True)
+
     st.subheader("Login")
 
     with st.form("form_login"):
