@@ -23,12 +23,15 @@ class PrecificacaoService:
         percentual_desgaste: float,
         lucro_padrao: float,
     ) -> ResultadoPrecificacao:
+        if lucro_padrao >= 100:
+            raise ValueError("Lucro padrão deve ser menor que 100%.")
+
         custo_filamento = (peso / 1000) * valor_kg
         custo_energia = (potencia_impressora / 1000) * tempo * energia_kwh
         custo_operacional = custo_filamento + custo_energia
         custo_desgaste = custo_operacional * (percentual_desgaste / 100)
         custo_total = custo_operacional + custo_desgaste
-        preco_sugerido = custo_total * (1 + lucro_padrao / 100)
+        preco_sugerido = custo_total / (1 - lucro_padrao / 100)
         lucro = preco_sugerido - custo_total
         margem = (lucro / preco_sugerido * 100) if preco_sugerido else 0.0
 

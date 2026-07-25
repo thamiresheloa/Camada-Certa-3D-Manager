@@ -54,7 +54,9 @@ else:
         )
         peso = st.number_input("Peso (g)", min_value=0.0, step=1.0)
         tempo = st.number_input("Tempo de impressão (h)", min_value=0.0, step=0.5)
-        lucro_padrao = st.number_input("Lucro padrão (%)", min_value=0.0, step=1.0, value=40.0)
+        lucro_padrao = st.number_input(
+            "Lucro padrão (%)", min_value=0.0, max_value=99.0, step=1.0, value=40.0
+        )
         foto_arquivo = st.file_uploader("Foto do produto", type=["png", "jpg", "jpeg", "webp"])
         observacao = st.text_area("Observações")
 
@@ -133,7 +135,11 @@ if produtos:
             "Tempo de impressão (h)", min_value=0.0, step=0.5, value=float(produto_atual.tempo or 0)
         )
         e_lucro_padrao = st.number_input(
-            "Lucro padrão (%)", min_value=0.0, step=1.0, value=float(produto_atual.lucro_padrao or 40)
+            "Lucro padrão (%)",
+            min_value=0.0,
+            max_value=99.0,
+            step=1.0,
+            value=float(produto_atual.lucro_padrao or 40),
         )
         e_foto_arquivo = st.file_uploader("Substituir foto (opcional)", type=["png", "jpg", "jpeg", "webp"])
         e_observacao = st.text_area("Observações", value=produto_atual.observacao or "")
