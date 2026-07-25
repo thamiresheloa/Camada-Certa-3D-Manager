@@ -8,6 +8,7 @@ from database.connection import Base
 
 class Configuracao(Base):
     __tablename__ = "Configuracoes"
+    __table_args__ = {"extend_existing": True}
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
     energia_kwh: Mapped[float | None] = mapped_column(Float, nullable=True)

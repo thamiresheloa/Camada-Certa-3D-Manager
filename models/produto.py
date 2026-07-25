@@ -12,6 +12,7 @@ if TYPE_CHECKING:
 
 class Produto(Base):
     __tablename__ = "Produtos"
+    __table_args__ = {"extend_existing": True}
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
     nome: Mapped[str | None] = mapped_column(String, nullable=True)

@@ -12,6 +12,7 @@ if TYPE_CHECKING:
 
 class Venda(Base):
     __tablename__ = "Vendas"
+    __table_args__ = {"extend_existing": True}
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
     produto_id: Mapped[int | None] = mapped_column(BigInteger, ForeignKey("Produtos.id"), nullable=True)

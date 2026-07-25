@@ -8,6 +8,7 @@ from database.connection import Base
 
 class Filamento(Base):
     __tablename__ = "Filamentos"
+    __table_args__ = {"extend_existing": True}
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
     tipo: Mapped[str | None] = mapped_column(String, nullable=True)
