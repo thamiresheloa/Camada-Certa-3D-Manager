@@ -31,19 +31,30 @@ class DashboardService:
         ]
 
         receita_mes = sum(v.valor_venda or 0 for v in vendas_mes)
-        lucro_mes = sum((v.produto.lucro or 0) * (v.quantidade or 0) for v in vendas_mes if v.produto)
-        produtos_vendidos_mes = sum(v.quantidade or 0 for v in vendas_mes)
         pedidos_mes = len(vendas_mes)
-        horas_impressao_mes = sum((v.produto.tempo or 0) * (v.quantidade or 0) for v in vendas_mes if v.produto)
-        filamento_consumido_mes = sum((v.produto.peso or 0) * (v.quantidade or 0) for v in vendas_mes if v.produto)
+
+        lucro_mes = 0.0
+        produtos_vendidos_mes = 0
+        horas_impressao_mes = 0.0
+        filamento_consumido_mes = 0.0
+        for v in vendas_mes:
+            for item in v.itens:
+                if not item.produto:
+                    continue
+                quantidade = item.quantidade or 0
+                lucro_mes += (item.produto.lucro or 0) * quantidade
+                produtos_vendidos_mes += quantidade
+                horas_impressao_mes += (item.produto.tempo or 0) * quantidade
+                filamento_consumido_mes += (item.produto.peso or 0) * quantidade
 
         ultimas_vendas = sorted(vendas, key=lambda v: v.id, reverse=True)[:10]
 
         ranking: dict[str, int] = {}
         for v in vendas:
-            if not v.produto:
-                continue
-            ranking[v.produto.nome] = ranking.get(v.produto.nome, 0) + (v.quantidade or 0)
+            for item in v.itens:
+                if not item.produto:
+                    continue
+                ranking[item.produto.nome] = ranking.get(item.produto.nome, 0) + (item.quantidade or 0)
         produtos_mais_vendidos = sorted(ranking.items(), key=lambda item: item[1], reverse=True)[:5]
 
         return ResumoDashboard(

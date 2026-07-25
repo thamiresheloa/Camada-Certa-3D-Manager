@@ -30,8 +30,9 @@ else:
     st.dataframe(
         [
             {
-                "Produto": v.produto.nome if v.produto else "-",
-                "Quantidade": v.quantidade,
+                "Produtos": ", ".join(
+                    f"{item.produto.nome if item.produto else '-'} ({item.quantidade}x)" for item in v.itens
+                ),
                 "Valor": v.valor_venda,
                 "Data": v.data_venda,
             }

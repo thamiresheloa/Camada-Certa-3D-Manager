@@ -6,10 +6,16 @@ from repositories.venda_repository import VendaRepository
 
 
 @dataclass
-class VendaData:
+class ItemVendaData:
     produto_id: int
     quantidade: int
-    valor_venda: float
+    valor_unitario: float
+
+
+@dataclass
+class VendaData:
+    itens: list[ItemVendaData]
+    pago: bool
     cliente: str | None = None
     canal: str | None = None
     forma_pagamento: str | None = None
@@ -31,38 +37,52 @@ class VendaService:
     def obter(self, id_):
         return self.repository.get_by_id(id_)
 
-    def sugerir_valor_total(self, produto_id: int, quantidade: int) -> float:
+    def sugerir_valor_unitario(self, produto_id: int) -> float:
         produto = self.produto_repository.get_by_id(produto_id)
         if produto is None or produto.preco_sugerido is None:
             return 0.0
-        return round(produto.preco_sugerido * quantidade, 2)
+        return produto.preco_sugerido
 
     def criar(self, dados: VendaData):
         self._validar(dados)
-        return self.repository.create(**self._campos(dados))
+        campos, itens = self._campos(dados)
+        return self.repository.criar_com_itens(campos, itens)
 
     def atualizar(self, id_, dados: VendaData):
         self._validar(dados)
-        return self.repository.update(id_, **self._campos(dados))
+        campos, itens = self._campos(dados)
+        return self.repository.atualizar_com_itens(id_, campos, itens)
 
     def excluir(self, id_):
         return self.repository.delete(id_)
 
     def _campos(self, dados: VendaData):
-        return {
-            "produto_id": dados.produto_id,
-            "quantidade": dados.quantidade,
-            "valor_venda": dados.valor_venda,
+        valor_total = sum(item.quantidade * item.valor_unitario for item in dados.itens)
+        campos = {
             "cliente": dados.cliente.strip() if dados.cliente else None,
             "canal": dados.canal.strip() if dados.canal else None,
             "forma_pagamento": dados.forma_pagamento.strip() if dados.forma_pagamento else None,
             "data_venda": dados.data_venda,
+            "pago": dados.pago,
+            "valor_venda": round(valor_total, 2),
         }
+        itens = [
+            {
+                "produto_id": item.produto_id,
+                "quantidade": item.quantidade,
+                "valor_unitario": item.valor_unitario,
+            }
+            for item in dados.itens
+        ]
+        return campos, itens
 
     def _validar(self, dados: VendaData):
-        if dados.produto_id is None:
-            raise ValueError("Selecione um produto.")
-        if dados.quantidade <= 0:
-            raise ValueError("Quantidade deve ser maior que zero.")
-        if dados.valor_venda < 0:
-            raise ValueError("Valor da venda não pode ser negativo.")
+        if not dados.itens:
+            raise ValueError("Adicione pelo menos um produto à venda.")
+        for item in dados.itens:
+            if item.produto_id is None:
+                raise ValueError("Selecione um produto para cada item.")
+            if item.quantidade <= 0:
+                raise ValueError("Quantidade deve ser maior que zero em todos os itens.")
+            if item.valor_unitario < 0:
+                raise ValueError("Valor unitário não pode ser negativo.")

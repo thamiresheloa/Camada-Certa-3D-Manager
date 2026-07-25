@@ -30,22 +30,28 @@ class RelatorioService:
             vendas = [v for v in vendas if v.data_venda and v.data_venda <= data_fim]
 
         receita_total = sum(v.valor_venda or 0 for v in vendas)
-        lucro_total = sum((v.produto.lucro or 0) * (v.quantidade or 0) for v in vendas if v.produto)
         pedidos = len(vendas)
         ticket_medio = round(receita_total / pedidos, 2) if pedidos else 0.0
-        horas_impressas = sum((v.produto.tempo or 0) * (v.quantidade or 0) for v in vendas if v.produto)
-        consumo_material = sum((v.produto.peso or 0) * (v.quantidade or 0) for v in vendas if v.produto)
 
+        lucro_total = 0.0
+        horas_impressas = 0.0
+        consumo_material = 0.0
         ranking_produtos: dict[str, int] = {}
         ranking_filamento: dict[str, float] = {}
         receita_por_dia: dict[date, float] = {}
 
         for v in vendas:
-            if v.produto:
-                ranking_produtos[v.produto.nome] = ranking_produtos.get(v.produto.nome, 0) + (v.quantidade or 0)
-                if v.produto.filamento:
-                    consumo = (v.produto.peso or 0) * (v.quantidade or 0)
-                    descricao_filamento = v.produto.filamento.descricao
+            for item in v.itens:
+                if not item.produto:
+                    continue
+                quantidade = item.quantidade or 0
+                lucro_total += (item.produto.lucro or 0) * quantidade
+                horas_impressas += (item.produto.tempo or 0) * quantidade
+                consumo_material += (item.produto.peso or 0) * quantidade
+                ranking_produtos[item.produto.nome] = ranking_produtos.get(item.produto.nome, 0) + quantidade
+                if item.produto.filamento:
+                    consumo = (item.produto.peso or 0) * quantidade
+                    descricao_filamento = item.produto.filamento.descricao
                     ranking_filamento[descricao_filamento] = ranking_filamento.get(descricao_filamento, 0) + consumo
             if v.data_venda:
                 receita_por_dia[v.data_venda] = receita_por_dia.get(v.data_venda, 0) + (v.valor_venda or 0)
