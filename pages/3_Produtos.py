@@ -1,4 +1,8 @@
+import io
+
 import streamlit as st
+from PIL import Image
+from streamlit_cropper import st_cropper
 
 from services.filamento_service import FilamentoService
 from services.produto_service import ProdutoData, ProdutoService
@@ -16,6 +20,36 @@ filamento_service = FilamentoService()
 produtos = produto_service.listar()
 filamentos = filamento_service.listar()
 opcoes_filamento = {f.id: f.descricao for f in filamentos}
+
+
+def editor_foto(arquivo, chave):
+    """Mostra controles de girar e recortar para um arquivo de imagem recém enviado. Retorna os bytes finais (PNG)."""
+    if arquivo is None:
+        return None
+
+    chave_rotacao = f"rotacao_{chave}"
+    if chave_rotacao not in st.session_state:
+        st.session_state[chave_rotacao] = 0
+
+    col_esq, col_dir = st.columns(2)
+    if col_esq.button("↺ Girar à esquerda", key=f"girar_esq_{chave}"):
+        st.session_state[chave_rotacao] = (st.session_state[chave_rotacao] + 90) % 360
+    if col_dir.button("↻ Girar à direita", key=f"girar_dir_{chave}"):
+        st.session_state[chave_rotacao] = (st.session_state[chave_rotacao] - 90) % 360
+
+    imagem = Image.open(arquivo)
+    if st.session_state[chave_rotacao]:
+        imagem = imagem.rotate(st.session_state[chave_rotacao], expand=True)
+
+    imagem_cortada = st_cropper(
+        imagem, realtime_update=True, box_color="#4CAF50", aspect_ratio=None, key=f"cropper_{chave}"
+    )
+    st.image(imagem_cortada, caption="Pré-visualização", width=200)
+
+    buffer = io.BytesIO()
+    imagem_cortada.convert("RGB").save(buffer, format="PNG")
+    return buffer.getvalue()
+
 
 st.subheader("Produtos cadastrados")
 if not produtos:
@@ -45,6 +79,12 @@ st.subheader("Novo produto")
 if not filamentos:
     st.warning("Cadastre um filamento antes de criar um produto.")
 else:
+    st.markdown("**Foto do produto (opcional)**")
+    foto_arquivo_novo = st.file_uploader(
+        "Selecione uma imagem", type=["png", "jpg", "jpeg", "webp"], key="upload_novo"
+    )
+    foto_bytes_novo = editor_foto(foto_arquivo_novo, "novo")
+
     with st.form("form_novo_produto"):
         nome = st.text_input("Nome do produto")
         filamento_id = st.selectbox(
@@ -57,7 +97,6 @@ else:
         lucro_padrao = st.number_input(
             "Lucro padrão (%)", min_value=0.0, max_value=99.0, step=1.0, value=40.0
         )
-        foto_arquivo = st.file_uploader("Foto do produto", type=["png", "jpg", "jpeg", "webp"])
         observacao = st.text_area("Observações")
 
         calcular = st.form_submit_button("Calcular")
@@ -73,7 +112,7 @@ else:
                 tempo=tempo,
                 lucro_padrao=lucro_padrao,
                 observacao=observacao,
-                foto=foto_arquivo.getvalue() if foto_arquivo else None,
+                foto=foto_bytes_novo,
             )
         except ValueError as erro:
             st.session_state.pop("novo_produto_resultado", None)
@@ -83,8 +122,6 @@ else:
     resultado = st.session_state.get("novo_produto_resultado")
     dados_pendentes = st.session_state.get("novo_produto_dados")
     if resultado and dados_pendentes:
-        if dados_pendentes.foto:
-            st.image(dados_pendentes.foto, width=200)
         st.markdown("**Resultado do cálculo**")
         col1, col2, col3 = st.columns(3)
         col1.metric("Custo filamento", f"R$ {resultado.custo_filamento:.2f}")
@@ -98,6 +135,7 @@ else:
             produto_service.criar(dados_pendentes, resultado)
             st.session_state.pop("novo_produto_resultado", None)
             st.session_state.pop("novo_produto_dados", None)
+            st.session_state.pop("rotacao_novo", None)
             st.success("Produto salvo com sucesso!")
             st.rerun()
 
@@ -114,7 +152,13 @@ if produtos:
     produto_atual = produto_service.obter(selecionado_id)
 
     if produto_atual.foto:
-        st.image(produto_atual.foto, width=200)
+        st.image(produto_atual.foto, caption="Foto atual", width=200)
+
+    st.markdown("**Substituir foto (opcional)**")
+    foto_arquivo_edicao = st.file_uploader(
+        "Selecione uma nova imagem", type=["png", "jpg", "jpeg", "webp"], key=f"upload_edicao_{selecionado_id}"
+    )
+    foto_bytes_edicao = editor_foto(foto_arquivo_edicao, f"edicao_{selecionado_id}")
 
     with st.form("form_editar_produto"):
         e_nome = st.text_input("Nome do produto", value=produto_atual.nome or "")
@@ -141,7 +185,6 @@ if produtos:
             step=1.0,
             value=float(produto_atual.lucro_padrao or 40),
         )
-        e_foto_arquivo = st.file_uploader("Substituir foto (opcional)", type=["png", "jpg", "jpeg", "webp"])
         e_observacao = st.text_area("Observações", value=produto_atual.observacao or "")
 
         col_salvar, col_excluir = st.columns(2)
@@ -158,7 +201,7 @@ if produtos:
                 tempo=e_tempo,
                 lucro_padrao=e_lucro_padrao,
                 observacao=e_observacao,
-                foto=e_foto_arquivo.getvalue() if e_foto_arquivo else produto_atual.foto,
+                foto=foto_bytes_edicao if foto_bytes_edicao else produto_atual.foto,
             )
             produto_service.atualizar(selecionado_id, dados, resultado)
             st.success("Produto atualizado com sucesso!")
