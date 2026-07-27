@@ -6,6 +6,15 @@ from services.produto_service import ProdutoService
 from services.venda_service import ItemVendaData, VendaData, VendaService
 from utils.auth import exigir_login
 
+STATUS_VENDA = [
+    "Orçamento",
+    "Pedido Confirmado",
+    "Pedido em Produção",
+    "Pronto para Entrega",
+    "Pedido entregue",
+    "Cancelado",
+]
+
 exigir_login()
 
 st.title("🛒 Vendas")
@@ -39,6 +48,7 @@ else:
                     f"{item.produto.nome if item.produto else '-'} ({item.quantidade}x)" for item in v.itens
                 ),
                 "Cliente": v.cliente,
+                "Status": v.status or "-",
                 "Canal": v.canal,
                 "Valor": v.valor_venda,
                 "Forma de pagamento": v.forma_pagamento,
@@ -112,6 +122,7 @@ else:
             canal = st.text_input("Canal")
             forma_pagamento = st.text_input("Forma de pagamento")
             pago = st.selectbox("Pago", options=["Sim", "Não"])
+            status = st.selectbox("Status", options=STATUS_VENDA, index=0)
             data_venda = st.date_input("Data da venda", value=date.today(), format="DD/MM/YYYY")
 
             registrar = st.form_submit_button("Registrar venda")
@@ -124,6 +135,7 @@ else:
                     cliente=cliente,
                     canal=canal,
                     forma_pagamento=forma_pagamento,
+                    status=status,
                     data_venda=data_venda,
                 )
                 venda_service.criar(dados)
@@ -139,7 +151,7 @@ if vendas:
 
     opcoes_venda = {
         v.id: (
-            f"#{v.id} — {v.cliente or 'sem cliente'} — "
+            f"#{v.id} — {v.cliente or 'sem cliente'} — {v.status or 'sem status'} — "
             f"{v.data_venda.strftime('%d/%m/%Y') if v.data_venda else ''} — R$ {v.valor_venda or 0:.2f}"
         )
         for v in vendas
@@ -214,6 +226,10 @@ if vendas:
         e_canal = st.text_input("Canal", value=venda_atual.canal or "")
         e_forma_pagamento = st.text_input("Forma de pagamento", value=venda_atual.forma_pagamento or "")
         e_pago = st.selectbox("Pago", options=["Sim", "Não"], index=0 if venda_atual.pago else 1)
+        indice_status = (
+            STATUS_VENDA.index(venda_atual.status) if venda_atual.status in STATUS_VENDA else 0
+        )
+        e_status = st.selectbox("Status", options=STATUS_VENDA, index=indice_status)
         e_data_venda = st.date_input("Data da venda", value=venda_atual.data_venda, format="DD/MM/YYYY")
 
         col_salvar, col_excluir = st.columns(2)
@@ -228,6 +244,7 @@ if vendas:
                 cliente=e_cliente,
                 canal=e_canal,
                 forma_pagamento=e_forma_pagamento,
+                status=e_status,
                 data_venda=e_data_venda,
             )
             venda_service.atualizar(selecionado_id, dados)
