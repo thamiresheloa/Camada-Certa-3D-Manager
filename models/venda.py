@@ -16,7 +16,6 @@ class Venda(Base):
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
     cliente: Mapped[str | None] = mapped_column(String, nullable=True)
-    email: Mapped[str | None] = mapped_column(String, nullable=True)
     telefone: Mapped[str | None] = mapped_column(String, nullable=True)
     canal: Mapped[str | None] = mapped_column(String, nullable=True)
     valor_venda: Mapped[float | None] = mapped_column(Float, nullable=True)

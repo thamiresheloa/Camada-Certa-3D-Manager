@@ -19,7 +19,6 @@ class VendaData:
     itens: list[ItemVendaData]
     pago: bool
     cliente: str | None = None
-    email: str | None = None
     telefone: str | None = None
     canal: str | None = None
     forma_pagamento: str | None = None
@@ -66,7 +65,6 @@ class VendaService:
         valor_total = sum(item.quantidade * item.valor_unitario for item in dados.itens)
         campos = {
             "cliente": dados.cliente.strip() if dados.cliente else None,
-            "email": dados.email.strip() if dados.email else None,
             "telefone": dados.telefone.strip() if dados.telefone else None,
             "canal": dados.canal.strip() if dados.canal else None,
             "forma_pagamento": dados.forma_pagamento.strip() if dados.forma_pagamento else None,

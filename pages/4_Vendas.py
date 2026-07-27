@@ -48,7 +48,6 @@ else:
                     f"{item.produto.nome if item.produto else '-'} ({item.quantidade}x)" for item in v.itens
                 ),
                 "Cliente": v.cliente,
-                "Email": v.email or "-",
                 "Telefone": v.telefone or "-",
                 "Status": v.status or "-",
                 "Canal": v.canal,

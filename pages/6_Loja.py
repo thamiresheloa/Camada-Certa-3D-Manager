@@ -88,7 +88,6 @@ else:
         st.session_state["telefone_pedido"] = formatado
 
     nome = st.text_input("Nome")
-    email = st.text_input("Email")
     telefone = st.text_input(
         "Telefone", key="telefone_pedido", on_change=_mascarar_telefone, placeholder="(11)99999-8888"
     )
@@ -102,8 +101,6 @@ else:
             st.error("Adicione ao menos um produto ao carrinho.")
         elif not nome.strip():
             st.error("Informe seu nome.")
-        elif not email.strip():
-            st.error("Informe seu email.")
         elif not telefone.strip():
             st.error("Informe seu telefone.")
         else:
@@ -118,7 +115,6 @@ else:
                 ],
                 pago=False,
                 cliente=nome,
-                email=email,
                 telefone=telefone,
                 forma_pagamento=forma_pagamento,
                 canal="Solicitado via App",
