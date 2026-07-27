@@ -9,7 +9,7 @@ produtos = st.Page("pages/3_Produtos.py", title="Produtos", icon="📦")
 vendas = st.Page("pages/4_Vendas.py", title="Vendas", icon="🛒")
 relatorios = st.Page("pages/5_Relatorios.py", title="Relatórios", icon="📊")
 loja = st.Page("pages/6_Loja.py", title="Loja", icon="🛍️", default=True)
-login = st.Page("pages/7_Login.py", title="Login", icon="🔒")
+login = st.Page("pages/7_Login.py", title="Área Restrita", icon="🔒")
 
 if st.session_state.get("autenticado"):
     paginas = [pagina_inicial, configuracoes, filamentos, produtos, vendas, relatorios]
