@@ -22,7 +22,10 @@ if "carrinho_loja" not in st.session_state:
 
 carrinho = st.session_state["carrinho_loja"]
 
+PRODUTO_ID_DESTAQUE = 1
+
 produtos = produto_service.listar()
+produtos = sorted(produtos, key=lambda p: p.id != PRODUTO_ID_DESTAQUE)
 
 st.subheader("Nossos produtos")
 if not produtos:
