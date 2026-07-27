@@ -19,6 +19,7 @@ class VendaData:
     cliente: str | None = None
     canal: str | None = None
     forma_pagamento: str | None = None
+    status: str | None = None
     data_venda: date | None = None
 
 
@@ -64,6 +65,7 @@ class VendaService:
             "forma_pagamento": dados.forma_pagamento.strip() if dados.forma_pagamento else None,
             "data_venda": dados.data_venda,
             "pago": dados.pago,
+            "status": dados.status,
             "valor_venda": round(valor_total, 2),
         }
         itens = [
