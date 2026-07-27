@@ -3,7 +3,7 @@ from datetime import date
 import streamlit as st
 
 from services.produto_service import ProdutoService
-from services.venda_service import ItemVendaData, VendaData, VendaService
+from services.venda_service import FORMAS_PAGAMENTO, ItemVendaData, VendaData, VendaService
 from utils.produtos_ui import renderizar_miniatura, truncar_nome
 
 CAMINHO_LOGO = "assets/logo.jpeg"
@@ -77,6 +77,7 @@ else:
         nome = st.text_input("Nome")
         email = st.text_input("Email")
         telefone = st.text_input("Telefone")
+        forma_pagamento = st.selectbox("Forma de pagamento", options=FORMAS_PAGAMENTO)
         observacoes = st.text_area("Observações (opcional)")
 
         realizar_pedido = st.form_submit_button("Realizar Pedido")
@@ -104,6 +105,7 @@ else:
                 cliente=nome,
                 email=email,
                 telefone=telefone,
+                forma_pagamento=forma_pagamento,
                 canal="Solicitado via App",
                 status="Orçamento",
                 observacoes=observacoes,

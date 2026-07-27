@@ -3,7 +3,7 @@ from datetime import date
 import streamlit as st
 
 from services.produto_service import ProdutoService
-from services.venda_service import ItemVendaData, VendaData, VendaService
+from services.venda_service import FORMAS_PAGAMENTO, ItemVendaData, VendaData, VendaService
 from utils.auth import exigir_login
 
 STATUS_VENDA = [
@@ -14,8 +14,6 @@ STATUS_VENDA = [
     "Pedido entregue",
     "Cancelado",
 ]
-
-FORMAS_PAGAMENTO = ["Pix", "Cartão de Crédito"]
 
 exigir_login()
 

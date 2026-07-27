@@ -4,6 +4,8 @@ from datetime import date
 from repositories.produto_repository import ProdutoRepository
 from repositories.venda_repository import VendaRepository
 
+FORMAS_PAGAMENTO = ["Pix", "Cartão de Crédito"]
+
 
 @dataclass
 class ItemVendaData:
