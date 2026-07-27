@@ -7,6 +7,7 @@ from streamlit_cropper import st_cropper
 from services.filamento_service import FilamentoService
 from services.produto_service import ProdutoData, ProdutoService
 from utils.auth import exigir_login
+from utils.produtos_ui import renderizar_miniatura, truncar_nome
 
 exigir_login()
 
@@ -41,7 +42,7 @@ def editor_foto(arquivo, chave):
         imagem = imagem.rotate(st.session_state[chave_rotacao], expand=True)
 
     imagem_cortada = st_cropper(
-        imagem, realtime_update=True, box_color="#4CAF50", aspect_ratio=None, key=f"cropper_{chave}"
+        imagem, realtime_update=True, box_color="#4CAF50", aspect_ratio=(1, 1), key=f"cropper_{chave}"
     )
     st.image(imagem_cortada, caption="Pré-visualização", width=200)
 
@@ -66,12 +67,9 @@ else:
         colunas = st.columns(4)
         for coluna, produto in zip(colunas, produtos_filtrados[inicio : inicio + 4]):
             with coluna:
-                with st.container(border=True):
-                    if produto.foto:
-                        st.image(produto.foto, width=120)
-                    else:
-                        st.markdown("🖼️ *(sem foto)*")
-                    st.markdown(f"**{produto.nome}**")
+                with st.container(border=True, height=380):
+                    renderizar_miniatura(produto.foto)
+                    st.markdown(f"**{truncar_nome(produto.nome)}**")
                     cor = produto.filamento.cor if produto.filamento else "-"
                     st.caption(f"Cor: {cor}")
                     preco_texto = f"R\\$ {produto.preco_sugerido:.2f}" if produto.preco_sugerido is not None else "-"
@@ -100,7 +98,7 @@ else:
     foto_bytes_novo = editor_foto(foto_arquivo_novo, "novo")
 
     with st.form("form_novo_produto", clear_on_submit=True):
-        nome = st.text_input("Nome do produto", key="novo_nome")
+        nome = st.text_input("Nome do produto", key="novo_nome", max_chars=50)
         filamento_id = st.selectbox(
             "Filamento",
             options=list(opcoes_filamento.keys()),
@@ -183,7 +181,7 @@ if produtos:
     foto_bytes_edicao = editor_foto(foto_arquivo_edicao, f"edicao_{selecionado_id}")
 
     with st.form("form_editar_produto"):
-        e_nome = st.text_input("Nome do produto", value=produto_atual.nome or "")
+        e_nome = st.text_input("Nome do produto", value=produto_atual.nome or "", max_chars=50)
         filamento_ids = list(opcoes_filamento.keys())
         indice_atual = (
             filamento_ids.index(produto_atual.filamento_id)

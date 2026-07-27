@@ -4,6 +4,7 @@ import streamlit as st
 
 from services.produto_service import ProdutoService
 from services.venda_service import ItemVendaData, VendaData, VendaService
+from utils.produtos_ui import renderizar_miniatura, truncar_nome
 
 CAMINHO_LOGO = "assets/logo.jpeg"
 CAMINHO_LOGO_HORIZONTAL = "assets/Logo_horizontal.png"
@@ -13,7 +14,7 @@ venda_service = VendaService()
 
 st.sidebar.image(CAMINHO_LOGO, use_container_width=True)
 
-st.image(CAMINHO_LOGO_HORIZONTAL, use_container_width=True)
+st.image(CAMINHO_LOGO_HORIZONTAL, width=300)
 st.caption("Confira nossos produtos e monte seu pedido.")
 
 if "carrinho_loja" not in st.session_state:
@@ -31,12 +32,9 @@ else:
         colunas = st.columns(4)
         for coluna, produto in zip(colunas, produtos[inicio : inicio + 4]):
             with coluna:
-                with st.container(border=True):
-                    if produto.foto:
-                        st.image(produto.foto, width=120)
-                    else:
-                        st.markdown("🖼️ *(sem foto)*")
-                    st.markdown(f"**{produto.nome}**")
+                with st.container(border=True, height=340):
+                    renderizar_miniatura(produto.foto)
+                    st.markdown(f"**{truncar_nome(produto.nome)}**")
                     preco_texto = (
                         f"R\\$ {produto.preco_sugerido:.2f}" if produto.preco_sugerido is not None else "-"
                     )
