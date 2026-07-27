@@ -6,13 +6,14 @@ from services.produto_service import ProdutoService
 from services.venda_service import ItemVendaData, VendaData, VendaService
 
 CAMINHO_LOGO = "assets/logo.jpeg"
+CAMINHO_LOGO_HORIZONTAL = "assets/Logo_horizontal.png"
 
 produto_service = ProdutoService()
 venda_service = VendaService()
 
 st.sidebar.image(CAMINHO_LOGO, use_container_width=True)
 
-st.title("🧩 Camada Certa 3D")
+st.image(CAMINHO_LOGO_HORIZONTAL, use_container_width=True)
 st.caption("Confira nossos produtos e monte seu pedido.")
 
 if "carrinho_loja" not in st.session_state:
