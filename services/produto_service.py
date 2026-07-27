@@ -1,9 +1,16 @@
 from dataclasses import dataclass
 
+import streamlit as st
+
 from repositories.configuracao_repository import ConfiguracaoRepository
 from repositories.filamento_repository import FilamentoRepository
 from repositories.produto_repository import ProdutoRepository
 from services.precificacao_service import PrecificacaoService, ResultadoPrecificacao
+
+
+@st.cache_data(ttl=30, show_spinner=False)
+def _listar_produtos_cache():
+    return ProdutoRepository().get_all()
 
 
 @dataclass
@@ -14,7 +21,7 @@ class ProdutoData:
     tempo: float
     lucro_padrao: float = 40.0
     observacao: str | None = None
-    foto: bytes | None = None
+    foto_url: str | None = None
 
 
 class ProdutoService:
@@ -31,7 +38,7 @@ class ProdutoService:
         self.precificacao_service = precificacao_service or PrecificacaoService()
 
     def listar(self):
-        return sorted(self.repository.get_all(), key=lambda p: (p.nome or "").lower())
+        return sorted(_listar_produtos_cache(), key=lambda p: (p.nome or "").lower())
 
     def obter(self, id_):
         return self.repository.get_by_id(id_)
@@ -55,14 +62,20 @@ class ProdutoService:
 
     def criar(self, dados: ProdutoData, resultado: ResultadoPrecificacao):
         self._validar(dados)
-        return self.repository.create(**self._campos(dados, resultado))
+        produto = self.repository.create(**self._campos(dados, resultado))
+        _listar_produtos_cache.clear()
+        return produto
 
     def atualizar(self, id_, dados: ProdutoData, resultado: ResultadoPrecificacao):
         self._validar(dados)
-        return self.repository.update(id_, **self._campos(dados, resultado))
+        produto = self.repository.update(id_, **self._campos(dados, resultado))
+        _listar_produtos_cache.clear()
+        return produto
 
     def excluir(self, id_):
-        return self.repository.delete(id_)
+        resultado = self.repository.delete(id_)
+        _listar_produtos_cache.clear()
+        return resultado
 
     def _obter_configuracao(self):
         configuracoes = self.configuracao_repository.get_all()
@@ -78,7 +91,7 @@ class ProdutoService:
             "tempo": dados.tempo,
             "lucro_padrao": dados.lucro_padrao,
             "observacao": dados.observacao.strip() if dados.observacao else None,
-            "foto": dados.foto,
+            "foto_url": dados.foto_url,
             "custo_filamento": resultado.custo_filamento,
             "custo_energia": resultado.custo_energia,
             "custo_desgaste": resultado.custo_desgaste,

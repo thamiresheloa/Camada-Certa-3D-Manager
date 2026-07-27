@@ -1,17 +1,18 @@
-import base64
-
 import streamlit as st
 
 TAMANHO_MINIATURA = 140
 LIMITE_NOME_EXIBICAO = 36
 
 
-def renderizar_miniatura(foto_bytes: bytes | None, tamanho: int = TAMANHO_MINIATURA):
-    """Mostra a foto do produto (ou um placeholder) sempre no mesmo tamanho quadrado."""
-    if foto_bytes:
-        b64 = base64.b64encode(foto_bytes).decode()
+def renderizar_miniatura(foto_url: str | None, tamanho: int = TAMANHO_MINIATURA):
+    """Mostra a foto do produto (ou um placeholder) sempre no mesmo tamanho quadrado.
+
+    Usa a URL pública do Supabase Storage em vez de embutir os bytes na página,
+    para o navegador poder cachear a imagem e a navegação ficar mais rápida.
+    """
+    if foto_url:
         st.markdown(
-            f'<img src="data:image/png;base64,{b64}" '
+            f'<img src="{foto_url}" loading="lazy" '
             f'style="width:100%;max-width:{tamanho}px;aspect-ratio:1/1;object-fit:cover;'
             f'border-radius:8px;display:block;" />',
             unsafe_allow_html=True,

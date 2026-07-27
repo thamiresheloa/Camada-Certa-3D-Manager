@@ -33,7 +33,7 @@ else:
         for coluna, produto in zip(colunas, produtos[inicio : inicio + 4]):
             with coluna:
                 with st.container(border=True, height=340):
-                    renderizar_miniatura(produto.foto)
+                    renderizar_miniatura(produto.foto_url)
                     st.markdown(f"**{truncar_nome(produto.nome)}**")
                     preco_texto = (
                         f"R\\$ {produto.preco_sugerido:.2f}" if produto.preco_sugerido is not None else "-"

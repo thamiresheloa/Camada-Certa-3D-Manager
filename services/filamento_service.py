@@ -1,7 +1,14 @@
 from dataclasses import dataclass
 from datetime import date
 
+import streamlit as st
+
 from repositories.filamento_repository import FilamentoRepository
+
+
+@st.cache_data(ttl=30, show_spinner=False)
+def _listar_filamentos_cache():
+    return FilamentoRepository().get_all()
 
 
 @dataclass
@@ -23,21 +30,27 @@ class FilamentoService:
         self.repository = repository or FilamentoRepository()
 
     def listar(self):
-        return sorted(self.repository.get_all(), key=lambda f: f.descricao.lower())
+        return sorted(_listar_filamentos_cache(), key=lambda f: f.descricao.lower())
 
     def obter(self, id_):
         return self.repository.get_by_id(id_)
 
     def criar(self, dados: FilamentoData):
         self._validar(dados)
-        return self.repository.create(**self._campos(dados))
+        filamento = self.repository.create(**self._campos(dados))
+        _listar_filamentos_cache.clear()
+        return filamento
 
     def atualizar(self, id_, dados: FilamentoData):
         self._validar(dados)
-        return self.repository.update(id_, **self._campos(dados))
+        filamento = self.repository.update(id_, **self._campos(dados))
+        _listar_filamentos_cache.clear()
+        return filamento
 
     def excluir(self, id_):
-        return self.repository.delete(id_)
+        resultado = self.repository.delete(id_)
+        _listar_filamentos_cache.clear()
+        return resultado
 
     def _campos(self, dados: FilamentoData):
         return {

@@ -6,6 +6,7 @@ from streamlit_cropper import st_cropper
 
 from services.filamento_service import FilamentoService
 from services.produto_service import ProdutoData, ProdutoService
+from services.storage_service import StorageService
 from utils.auth import exigir_login
 from utils.produtos_ui import renderizar_miniatura, truncar_nome
 
@@ -16,6 +17,9 @@ st.caption("Ficha técnica e precificação automática dos produtos.")
 
 produto_service = ProdutoService()
 filamento_service = FilamentoService()
+storage_service = StorageService()
+
+TAMANHO_FOTO = 480
 
 produtos = produto_service.listar()
 filamentos = filamento_service.listar()
@@ -23,7 +27,11 @@ opcoes_filamento = {f.id: f.descricao for f in filamentos}
 
 
 def editor_foto(arquivo, chave):
-    """Mostra controles de girar e recortar para um arquivo de imagem recém enviado. Retorna os bytes finais (PNG)."""
+    """Mostra controles de girar e recortar para um arquivo de imagem recém enviado.
+
+    Retorna os bytes finais em JPEG, já redimensionados para um tamanho de miniatura
+    (evita fotos de vários MB indo pro Storage e deixando a navegação lenta).
+    """
     if arquivo is None:
         return None
 
@@ -46,8 +54,9 @@ def editor_foto(arquivo, chave):
     )
     st.image(imagem_cortada, caption="Pré-visualização", width=200)
 
+    imagem_final = imagem_cortada.convert("RGB").resize((TAMANHO_FOTO, TAMANHO_FOTO), Image.Resampling.LANCZOS)
     buffer = io.BytesIO()
-    imagem_cortada.convert("RGB").save(buffer, format="PNG")
+    imagem_final.save(buffer, format="JPEG", quality=85, optimize=True)
     return buffer.getvalue()
 
 
@@ -68,7 +77,7 @@ else:
         for coluna, produto in zip(colunas, produtos_filtrados[inicio : inicio + 4]):
             with coluna:
                 with st.container(border=True, height=380):
-                    renderizar_miniatura(produto.foto)
+                    renderizar_miniatura(produto.foto_url)
                     st.markdown(f"**{truncar_nome(produto.nome)}**")
                     cor = produto.filamento.cor if produto.filamento else "-"
                     st.caption(f"Cor: {cor}")
@@ -76,6 +85,7 @@ else:
                     st.write(preco_texto)
                     if st.button("🗑️ Excluir", key=f"excluir_card_{produto.id}", use_container_width=True):
                         with st.spinner("Excluindo..."):
+                            storage_service.excluir_foto(produto.foto_url)
                             produto_service.excluir(produto.id)
                         st.toast("Produto excluído.", icon="🗑️")
                         st.rerun()
@@ -127,7 +137,6 @@ else:
                 tempo=tempo or 0.0,
                 lucro_padrao=lucro_padrao,
                 observacao=observacao,
-                foto=foto_bytes_novo,
             )
         except ValueError as erro:
             st.session_state.pop("novo_produto_resultado", None)
@@ -149,6 +158,8 @@ else:
         if st.button("Salvar produto"):
             try:
                 with st.spinner("Salvando..."):
+                    if foto_bytes_novo:
+                        dados_pendentes.foto_url = storage_service.enviar_foto(foto_bytes_novo)
                     produto_service.criar(dados_pendentes, resultado)
                 st.session_state.pop("novo_produto_resultado", None)
                 st.session_state.pop("novo_produto_dados", None)
@@ -171,8 +182,8 @@ if produtos:
     )
     produto_atual = produto_service.obter(selecionado_id)
 
-    if produto_atual.foto:
-        st.image(produto_atual.foto, caption="Foto atual", width=200)
+    if produto_atual.foto_url:
+        st.image(produto_atual.foto_url, caption="Foto atual", width=200)
 
     st.markdown("**Substituir foto (opcional)**")
     foto_arquivo_edicao = st.file_uploader(
@@ -214,16 +225,21 @@ if produtos:
     if recalcular_salvar:
         try:
             resultado = produto_service.calcular_preco(e_filamento_id, e_peso, e_tempo, e_lucro_padrao)
-            dados = ProdutoData(
-                nome=e_nome,
-                filamento_id=e_filamento_id,
-                peso=e_peso,
-                tempo=e_tempo,
-                lucro_padrao=e_lucro_padrao,
-                observacao=e_observacao,
-                foto=foto_bytes_edicao if foto_bytes_edicao else produto_atual.foto,
-            )
             with st.spinner("Salvando..."):
+                if foto_bytes_edicao:
+                    storage_service.excluir_foto(produto_atual.foto_url)
+                    foto_url = storage_service.enviar_foto(foto_bytes_edicao)
+                else:
+                    foto_url = produto_atual.foto_url
+                dados = ProdutoData(
+                    nome=e_nome,
+                    filamento_id=e_filamento_id,
+                    peso=e_peso,
+                    tempo=e_tempo,
+                    lucro_padrao=e_lucro_padrao,
+                    observacao=e_observacao,
+                    foto_url=foto_url,
+                )
                 produto_service.atualizar(selecionado_id, dados, resultado)
             st.toast("Produto atualizado com sucesso!", icon="✅")
             st.rerun()
@@ -232,6 +248,7 @@ if produtos:
 
     if excluir:
         with st.spinner("Excluindo..."):
+            storage_service.excluir_foto(produto_atual.foto_url)
             produto_service.excluir(selecionado_id)
         st.toast("Produto excluído.", icon="🗑️")
         st.rerun()
