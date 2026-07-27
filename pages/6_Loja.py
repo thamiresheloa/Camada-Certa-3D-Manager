@@ -76,14 +76,26 @@ else:
     st.metric("Total do pedido", f"R$ {total:.2f}")
 
     st.subheader("Finalizar pedido")
-    with st.form("form_pedido_publico"):
-        nome = st.text_input("Nome")
-        email = st.text_input("Email")
-        telefone = st.text_input("Telefone")
-        forma_pagamento = st.selectbox("Forma de pagamento", options=FORMAS_PAGAMENTO)
-        observacoes = st.text_area("Observações (opcional)")
 
-        realizar_pedido = st.form_submit_button("Realizar Pedido")
+    def _mascarar_telefone():
+        digitos = "".join(c for c in st.session_state.get("telefone_pedido", "") if c.isdigit())[:11]
+        if len(digitos) <= 2:
+            formatado = f"({digitos}" if digitos else ""
+        elif len(digitos) <= 7:
+            formatado = f"({digitos[:2]}){digitos[2:]}"
+        else:
+            formatado = f"({digitos[:2]}){digitos[2:7]}-{digitos[7:]}"
+        st.session_state["telefone_pedido"] = formatado
+
+    nome = st.text_input("Nome")
+    email = st.text_input("Email")
+    telefone = st.text_input(
+        "Telefone", key="telefone_pedido", on_change=_mascarar_telefone, placeholder="(11)99999-8888"
+    )
+    forma_pagamento = st.selectbox("Forma de pagamento", options=FORMAS_PAGAMENTO)
+    observacoes = st.text_area("Observações (opcional)")
+
+    realizar_pedido = st.button("Realizar Pedido")
 
     if realizar_pedido:
         if not carrinho:
