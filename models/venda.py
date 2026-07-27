@@ -16,11 +16,14 @@ class Venda(Base):
 
     id: Mapped[int] = mapped_column(BigInteger, primary_key=True)
     cliente: Mapped[str | None] = mapped_column(String, nullable=True)
+    email: Mapped[str | None] = mapped_column(String, nullable=True)
+    telefone: Mapped[str | None] = mapped_column(String, nullable=True)
     canal: Mapped[str | None] = mapped_column(String, nullable=True)
     valor_venda: Mapped[float | None] = mapped_column(Float, nullable=True)
     forma_pagamento: Mapped[str | None] = mapped_column(String, nullable=True)
     pago: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
     status: Mapped[str | None] = mapped_column(String, nullable=True)
+    observacoes: Mapped[str | None] = mapped_column(String, nullable=True)
     data_venda: Mapped[date | None] = mapped_column(Date, nullable=True)
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
