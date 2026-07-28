@@ -25,6 +25,7 @@ class VendaData:
     status: str | None = None
     observacoes: str | None = None
     data_venda: date | None = None
+    desconto: float = 0.0
 
 
 class VendaService:
@@ -72,7 +73,8 @@ class VendaService:
             "pago": dados.pago,
             "status": dados.status,
             "observacoes": dados.observacoes.strip() if dados.observacoes else None,
-            "valor_venda": round(valor_total, 2),
+            "desconto": dados.desconto or 0.0,
+            "valor_venda": round(valor_total - (dados.desconto or 0.0), 2),
         }
         itens = [
             {
@@ -94,3 +96,8 @@ class VendaService:
                 raise ValueError("Quantidade deve ser maior que zero em todos os itens.")
             if item.valor_unitario < 0:
                 raise ValueError("Valor unitário não pode ser negativo.")
+        if dados.desconto and dados.desconto < 0:
+            raise ValueError("Desconto não pode ser negativo.")
+        valor_total = sum(item.quantidade * item.valor_unitario for item in dados.itens)
+        if dados.desconto and dados.desconto > valor_total:
+            raise ValueError("Desconto não pode ser maior que o valor total da venda.")

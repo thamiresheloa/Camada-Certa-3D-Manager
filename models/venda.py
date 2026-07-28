@@ -19,6 +19,7 @@ class Venda(Base):
     telefone: Mapped[str | None] = mapped_column(String, nullable=True)
     canal: Mapped[str | None] = mapped_column(String, nullable=True)
     valor_venda: Mapped[float | None] = mapped_column(Float, nullable=True)
+    desconto: Mapped[float | None] = mapped_column(Float, nullable=True)
     forma_pagamento: Mapped[str | None] = mapped_column(String, nullable=True)
     pago: Mapped[bool | None] = mapped_column(Boolean, nullable=True)
     status: Mapped[str | None] = mapped_column(String, nullable=True)

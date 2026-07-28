@@ -51,6 +51,7 @@ else:
                 "Telefone": v.telefone or "-",
                 "Status": v.status or "-",
                 "Canal": v.canal,
+                "Desconto": v.desconto or 0.0,
                 "Valor": v.valor_venda,
                 "Forma de pagamento": v.forma_pagamento,
                 "Pago": formatar_pago(v.pago),
@@ -125,6 +126,7 @@ else:
             forma_pagamento = st.selectbox("Forma de pagamento", options=FORMAS_PAGAMENTO)
             pago = st.selectbox("Pago", options=["Sim", "Não"])
             status = st.selectbox("Status", options=STATUS_VENDA, index=0)
+            desconto = st.number_input("Desconto (R$)", min_value=0.0, step=1.0, value=0.0)
             observacoes = st.text_area("Observações")
             data_venda = st.date_input("Data da venda", value=date.today(), format="DD/MM/YYYY")
 
@@ -139,6 +141,7 @@ else:
                     canal=canal,
                     forma_pagamento=forma_pagamento,
                     status=status,
+                    desconto=desconto,
                     observacoes=observacoes,
                     data_venda=data_venda,
                 )
@@ -241,6 +244,9 @@ if vendas:
             STATUS_VENDA.index(venda_atual.status) if venda_atual.status in STATUS_VENDA else 0
         )
         e_status = st.selectbox("Status", options=STATUS_VENDA, index=indice_status)
+        e_desconto = st.number_input(
+            "Desconto (R$)", min_value=0.0, step=1.0, value=float(venda_atual.desconto or 0.0)
+        )
         e_observacoes = st.text_area("Observações", value=venda_atual.observacoes or "")
         e_data_venda = st.date_input("Data da venda", value=venda_atual.data_venda, format="DD/MM/YYYY")
 
@@ -257,6 +263,7 @@ if vendas:
                 canal=e_canal,
                 forma_pagamento=e_forma_pagamento,
                 status=e_status,
+                desconto=e_desconto,
                 observacoes=e_observacoes,
                 data_venda=e_data_venda,
             )
